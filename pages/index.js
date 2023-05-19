@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import styled from "styled-components";
@@ -11,6 +10,60 @@ export default function Home() {
 	useEffect(() => {
 		getStarships();
 	}, []);
+
+	useEffect(() => {
+		function calcCenter() {
+			let center = document.createElement("div");
+			center.setAttribute("class", "center");
+			center.style.top = scy + "px";
+			center.style.left = scx + "px";
+			document.body.appendChild(center);
+		}
+
+		function calcAngle(p1, p2) {
+			var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+			return radToDegree(angle);
+		}
+
+		function radToDegree(rad) {
+			return ((rad > 0 ? rad : 2 * Math.PI + rad) * 360) / (2 * Math.PI);
+		}
+
+		// Calculate window size
+		let scw, sch, scx, scy;
+		sch = window.innerHeight;
+		scw = window.innerWidth;
+		scx = scw / 2;
+		scy = sch / 2;
+		const centerBounds = 40;
+
+		// Place central point
+		calcCenter();
+
+		// Create stars
+		for (let i = 0; i < 1000; i++) {
+			let div = document.createElement("div");
+			let top = Math.floor(Math.random() * sch);
+			let left = Math.floor(Math.random() * scw);
+			let angle = calcAngle({ x: left, y: top }, { x: scx, y: scy });
+			div.setAttribute("class", "star");
+			div.style.top = top + "px";
+			div.style.left = left + "px";
+			div.style.transform = "rotate(" + (angle + 180) + "deg)";
+			if (
+				// No star streaks on central path
+				top >= scy - centerBounds &&
+				top <= scy + centerBounds &&
+				left >= scx - centerBounds &&
+				left <= scx + centerBounds
+			) {
+				div.style.maxWidth = "1px";
+			}
+			setTimeout(() => {
+				document.getElementById("test").appendChild(div);
+			}, 12500);
+		}
+	}, [loading]);
 
 	const getStarships = async () => {
 		try {
@@ -64,13 +117,31 @@ export default function Home() {
 			(starship) => starship.crew <= 10
 		);
 		console.log(formattedStarships);
-		formattedStarships.sort((a, b) => parseFloat(a.crew) - parseFloat(b.crew));
-		setLoading(false);
+		formattedStarships.sort(
+			(a, b) => parseFloat(a.crew) - parseFloat(b.crew)
+		);
+		setTimeout(() => {
+			setLoading(false);
+		}, 15000);
 		setStarships(formattedStarships);
 	};
 
 	return loading ? (
-		<p>Loading</p>
+		<LoadingPageStyles>
+			<div className="body">
+				<div className="wrapper">
+					<div className="scrollText">
+						<h1>Welcome to Star Wars Ships!</h1>
+						<p>
+							Hello my name is Imran and welcome to my loading
+							screen. I hope you enjoy the application and may the force be with
+							you! Please wait for the stars to show...
+						</p>
+					</div>
+				</div>
+			</div>
+			<div id="test"></div>
+		</LoadingPageStyles>
 	) : (
 		<ContainerStyles>
 			<Head>
@@ -82,10 +153,10 @@ export default function Home() {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 
-			<main >
+			<main>
+				<div id="test"></div>
 				<div className="intro">
-					<h1 >Welcome to Star Wars Ships!</h1>
-
+					<h1>Welcome to Star Wars Ships!</h1>
 				</div>
 				<div className="shipContainer">
 					{starships.map((starship) => (
@@ -97,25 +168,142 @@ export default function Home() {
 							<p>Films: {starship.films.length}</p>
 						</div>
 					))}
-
 				</div>
 			</main>
 		</ContainerStyles>
 	);
 }
 
+const LoadingPageStyles = styled.div`
+	background: black;
+	max-width: 1440px;
+	max-height: 764px;
+	margin: 0 auto;
+	.body {
+		overflow: hidden;
+		padding: 80% 0 0 0;
+		position: relative;
+		width: 100%;
+		max-height: 764px;
+		margin: 0 auto;
+		height: 100vh;
+		&::after {
+			content: "";
+			position: fixed;
+			top: 0rem;
+			width: 100%;
+			height: 55%;
+			background: linear-gradient(
+				180deg,
+				#000 40%,
+				rgba(20, 20, 20, 0) 100%
+			);
+		}
+	}
+	.wrapper {
+		display: flex;
+		height: 100%;
+		width: 60%;
+		margin: 0 auto;
+		perspective: 450px;
+		.scrollText {
+			color: #ffc909;
+			font-size: 3vw;
+			text-align: justify;
+			position: relative;
+			h1 {
+				text-align: center;
+			}
+			animation: scroll 70s linear forwards;
+		}
+	}
+	
+	@media (max-width: 768px) {
+		.wrapper{
+			width: 90%;
+			.scrollText {
+				text-align: center;
+				font-size: 10vw;
+			}
+		}
+	}
+	@media (min-width: 1440px) {
+		.body {
+			padding: 70vh 0 0 0;
+		}
+	}
+	@media (max-width: 1439px) {
+		.body {
+			padding: 80% 0 0 0;
+		}
+	}
+
+	@keyframes scroll {
+		from {
+			top: 0;
+			transform: translateZ(0) rotateX(20deg);
+		}
+		to {
+			top: -7000px;
+			transform: translateZ(-2500px) rotateX(21deg);
+		}
+	}
+
+	@keyframes lightspeed {
+		100% {
+			width: 100vh;
+		}
+	}
+
+	.center {
+		height: 1px;
+		width: 1px;
+		position: absolute;
+	}
+
+	body {
+		background-color: #111;
+		min-height: 100vh;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.star {
+		border: 1px solid transparent;
+		border-radius: 50%;
+		border-top-color: #fff;
+		margin: 0;
+		position: absolute;
+		transform-origin: left;
+		width: 1px;
+
+		&:nth-child(2n) {
+			animation-name: lightspeed;
+			animation-duration: 4s;
+			animation-delay: 2s;
+			animation-iteration-count: infinite;
+		}
+	}
+`;
+
 const ContainerStyles = styled.div`
 	display: flex;
+	height: 100vh;
+	overflow: hidden;
 	justify-content: center;
 	text-align: center;
-	background-image: url("../img/stars.jpg");
+	background: black;
+	${"" /* background-image: url("../img/stars.jpg"); */}
 	background-size: cover;
 	background-repeat: no-repeat;
 	background-position: center;
 	padding: 4rem;
 	main {
+		display: flex;
+		flex-direction: column;
+		color: #000;
 		.intro {
-			color: white;
+			color: #ffc909;
 		}
 		.shipContainer {
 			max-width: 1200px;
@@ -125,7 +313,6 @@ const ContainerStyles = styled.div`
 			.ship {
 				background: white;
 				border-radius: 10px;
-
 			}
 		}
 	}
