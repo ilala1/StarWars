@@ -2,15 +2,19 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 
 import styled from "styled-components";
+import Modal from "./components/Modal";
 
 export default function Home() {
 	const [starships, setStarships] = useState([]);
-	const [loading, setLoading] = useState(true);
+	const [activeShip, setActiveShip] = useState(null);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
+	const [openModal, setOpenModal] = useState(false);
 	useEffect(() => {
 		getStarships();
 	}, []);
 
+	// light speed animation
 	useEffect(() => {
 		function calcCenter() {
 			let center = document.createElement("div");
@@ -60,8 +64,10 @@ export default function Home() {
 				div.style.maxWidth = "1px";
 			}
 			setTimeout(() => {
-				document.getElementById("test").appendChild(div);
-			}, 12500);
+				if (document.getElementById("test")) {
+					document.getElementById("test").appendChild(div);
+				}
+			}, 11000);
 		}
 	}, [loading]);
 
@@ -108,10 +114,10 @@ export default function Home() {
 	};
 
 	const formatStarshipResponse = (data) => {
-		const testing = data.map((r) => {
+		const responseResultsArr = data.map((r) => {
 			return r.results;
 		});
-		const merge = testing.flat(1);
+		const merge = responseResultsArr.flat(1);
 
 		const formattedStarships = merge.filter(
 			(starship) => starship.crew <= 10
@@ -122,9 +128,15 @@ export default function Home() {
 		);
 		setTimeout(() => {
 			setLoading(false);
-		}, 15000);
+		}, 13500);
 		setStarships(formattedStarships);
 	};
+
+	const handleClick = (ship) => {
+		console.log('click')
+		setOpenModal(true);
+		setActiveShip(ship);
+	}
 
 	return loading ? (
 		<LoadingPageStyles>
@@ -154,7 +166,11 @@ export default function Home() {
 			</Head>
 
 			<main>
-				<div id="test"></div>
+			<Modal 
+				openModal={openModal}
+				setOpenModal={setOpenModal}
+				content={activeShip}
+			/>
 				<div className="intro">
 					<h1>Welcome to Star Wars Ships!</h1>
 				</div>
@@ -166,6 +182,7 @@ export default function Home() {
 							<p>Manufacturer: {starship.manufacturer}</p>
 							<p>Crew: {starship.crew}</p>
 							<p>Films: {starship.films.length}</p>
+							<button onClick={()=>{handleClick(starship)}}>View More details</button>
 						</div>
 					))}
 				</div>
@@ -173,6 +190,50 @@ export default function Home() {
 		</ContainerStyles>
 	);
 }
+
+const ContainerStyles = styled.div`
+	display: flex;
+	width: 100%;
+	justify-content: center;
+	text-align: center;
+	background-image: url("../img/stars.jpg");
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center;
+	padding: 4rem;
+	main {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+		color: #000;
+		.intro {
+			color: #ffc909;
+		}
+		.shipContainer {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 1rem;
+			.ship {
+				background: white;
+				border-radius: 10px;
+			}
+		}
+	}
+	@media (max-width: 1200px) {
+		main {
+			.shipContainer {
+				grid-template-columns: repeat(2, 1fr);
+			}
+		}
+	}
+	@media (max-width: 768px) {
+		main {
+			.shipContainer {
+				grid-template-columns: 1fr;
+			}
+		}
+	}
+`;
 
 const LoadingPageStyles = styled.div`
 	background: black;
@@ -282,38 +343,6 @@ const LoadingPageStyles = styled.div`
 			animation-duration: 4s;
 			animation-delay: 2s;
 			animation-iteration-count: infinite;
-		}
-	}
-`;
-
-const ContainerStyles = styled.div`
-	display: flex;
-	height: 100vh;
-	overflow: hidden;
-	justify-content: center;
-	text-align: center;
-	background: black;
-	${"" /* background-image: url("../img/stars.jpg"); */}
-	background-size: cover;
-	background-repeat: no-repeat;
-	background-position: center;
-	padding: 4rem;
-	main {
-		display: flex;
-		flex-direction: column;
-		color: #000;
-		.intro {
-			color: #ffc909;
-		}
-		.shipContainer {
-			max-width: 1200px;
-			display: grid;
-			grid-template-columns: repeat(4, 1fr);
-			gap: 1rem;
-			.ship {
-				background: white;
-				border-radius: 10px;
-			}
 		}
 	}
 `;
