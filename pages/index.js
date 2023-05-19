@@ -4,6 +4,42 @@ import styles from "../styles/Home.module.css";
 import { useEffect, useState } from "react";
 
 export default function Home() {
+	const [starships, setStarships] = useState([]);
+	const [error, setError] = useState(null);
+	useEffect(() => {
+		getStarships();
+	}, []);
+
+	const getStarships = async () => {
+		try {
+			const res = await Promise.all([
+				fetch("https://swapi.dev/api/starships"),
+				fetch("https://swapi.dev/api/starships/?page=2"),
+				fetch("https://swapi.dev/api/starships/?page=3"),
+				fetch("https://swapi.dev/api/starships/?page=4"),
+			]);
+
+			let successResponses = [];
+			let errorResponses = [];
+			console.log(res);
+
+			res.map((r) => {
+				if (r.ok) {
+					successResponses.push(r);
+				} else {
+					errorResponses.push(r);
+				}
+			});
+
+			console.log(errorResponses);
+		} catch (error) {
+			return null;
+		}
+	};
+
+	// console.log(starships);
+	// console.log(error);
+
 	return (
 		<div className={styles.container}>
 			<Head>
