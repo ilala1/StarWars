@@ -32,9 +32,37 @@ export default function Home() {
 			});
 
 			console.log(errorResponses);
+			if (errorResponses.length > 0) {
+				getMoreStarships(successResponses);
+			} else {
+				const data = await Promise.all(res.map((r) => r.json()));
+				formatStarshipResponse(data);
+				setStarships(data.flat());
+			}
 		} catch (error) {
 			return null;
 		}
+	};
+
+	const getMoreStarships = async (successResponses) => {
+		const arrayOfResponses = await Promise.all(
+			successResponses.map((url) =>
+				fetch(url.url).then((res) => res.json())
+			)
+		);
+		formatStarshipResponse(arrayOfResponses);
+	};
+
+	const formatStarshipResponse = (data) => {
+		const testing = data.map((r) => {
+			return r.results;
+		});
+		const merge = testing.flat(1);
+
+		const formattedStarships = merge.filter(starship => starship.crew <= 10 );
+		console.log(formattedStarships);
+
+		setStarships(formattedStarships);
 	};
 
 	// console.log(starships);
