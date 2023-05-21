@@ -64,41 +64,37 @@ export default function Home() {
 				div.style.maxWidth = "1px";
 			}
 			setTimeout(() => {
-				if (document.getElementById("test")) {
-					document.getElementById("test").appendChild(div);
+				if (document.getElementById("starsContainer")) {
+					document.getElementById("starsContainer").appendChild(div);
 				}
 			}, 11000);
 		}
 	}, [loading]);
 
 	const getStarships = async () => {
-		try {
-			const res = await Promise.all([
-				fetch("https://swapi.dev/api/starships"),
-				fetch("https://swapi.dev/api/starships/?page=2"),
-				fetch("https://swapi.dev/api/starships/?page=3"),
-				fetch("https://swapi.dev/api/starships/?page=4"),
-			]);
+		const res = await Promise.all([
+			fetch("https://swapi.dev/api/starships"),
+			fetch("https://swapi.dev/api/starships/?page=2"),
+			fetch("https://swapi.dev/api/starships/?page=3"),
+			fetch("https://swapi.dev/api/starships/?page=4"),
+		]);
 
-			let successResponses = [];
-			let errorResponses = [];
+		let successResponses = [];
+		let errorResponses = [];
 
-			res.map((r) => {
-				if (r.ok) {
-					successResponses.push(r);
-				} else {
-					errorResponses.push(r);
-				}
-			});
-
-			if (errorResponses.length > 0) {
-				getMoreStarships(successResponses);
+		res.map((r) => {
+			if (r.ok) {
+				successResponses.push(r);
 			} else {
-				const data = await Promise.all(res.map((r) => r.json()));
-				formatStarshipResponse(data);
+				errorResponses.push(r);
 			}
-		} catch (error) {
-			return null;
+		});
+
+		if (errorResponses.length > 0) {
+			getMoreStarships(successResponses);
+		} else {
+			const data = await Promise.all(res.map((r) => r.json()));
+			formatStarshipResponse(data);
 		}
 	};
 
@@ -115,9 +111,9 @@ export default function Home() {
 		const responseResultsArr = data.map((r) => {
 			return r.results;
 		});
-		const merge = responseResultsArr.flat(1);
+		const mergedResponseArrs = responseResultsArr.flat(1);
 
-		const formattedStarships = merge.filter(
+		const formattedStarships = mergedResponseArrs.filter(
 			(starship) => starship.crew <= 10
 		);
 		formattedStarships.sort(
@@ -155,7 +151,7 @@ export default function Home() {
 					</div>
 				</div>
 			</div>
-			<div id="test"></div>
+			<div id="starsContainer"></div>
 		</LoadingPageStyles>
 	) : (
 		<ContainerStyles>
@@ -182,7 +178,7 @@ export default function Home() {
 				</div>
 				<div className="shipContainer">
 					{starships.map((starship) => (
-						<div key={starship.name} className="ship">
+						<div key={starship.name} className="ship" data-aos="fade-up">
 							{starship.films.length === highestFilmCount && (
 								<img
 									src="../img/star.png"
