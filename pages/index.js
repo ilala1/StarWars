@@ -7,9 +7,9 @@ import Modal from "./components/Modal";
 export default function Home() {
 	const [starships, setStarships] = useState([]);
 	const [activeShip, setActiveShip] = useState(null);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState(null);
+	const [loading, setLoading] = useState(true);
 	const [openModal, setOpenModal] = useState(false);
+	const [highestFilmCount, setHighestFilmCount] = useState(0);
 	useEffect(() => {
 		getStarships();
 	}, []);
@@ -82,7 +82,6 @@ export default function Home() {
 
 			let successResponses = [];
 			let errorResponses = [];
-			console.log(res);
 
 			res.map((r) => {
 				if (r.ok) {
@@ -92,7 +91,6 @@ export default function Home() {
 				}
 			});
 
-			console.log(errorResponses);
 			if (errorResponses.length > 0) {
 				getMoreStarships(successResponses);
 			} else {
@@ -122,21 +120,25 @@ export default function Home() {
 		const formattedStarships = merge.filter(
 			(starship) => starship.crew <= 10
 		);
-		console.log(formattedStarships);
 		formattedStarships.sort(
 			(a, b) => parseFloat(a.crew) - parseFloat(b.crew)
+		);
+		setStarships(formattedStarships);
+		setHighestFilmCount(
+			Math.max.apply(
+				Math,
+				formattedStarships.map((o) => o.films.length)
+			)
 		);
 		setTimeout(() => {
 			setLoading(false);
 		}, 13500);
-		setStarships(formattedStarships);
 	};
 
 	const handleClick = (ship) => {
-		console.log('click')
 		setOpenModal(true);
 		setActiveShip(ship);
-	}
+	};
 
 	return loading ? (
 		<LoadingPageStyles>
@@ -146,8 +148,9 @@ export default function Home() {
 						<h1>Welcome to Star Wars Ships!</h1>
 						<p>
 							Hello my name is Imran and welcome to my loading
-							screen. I hope you enjoy the application and may the force be with
-							you! Please wait for the stars to show...
+							screen. I hope you enjoy the application and may the
+							force be with you! Please wait for the stars to
+							show...
 						</p>
 					</div>
 				</div>
@@ -166,23 +169,38 @@ export default function Home() {
 			</Head>
 
 			<main>
-			<Modal 
-				openModal={openModal}
-				setOpenModal={setOpenModal}
-				content={activeShip}
-			/>
+				{activeShip && (
+					<Modal
+						openModal={openModal}
+						setOpenModal={setOpenModal}
+						content={activeShip}
+						highestFilmCount={highestFilmCount}
+					/>
+				)}
 				<div className="intro">
 					<h1>Welcome to Star Wars Ships!</h1>
 				</div>
 				<div className="shipContainer">
 					{starships.map((starship) => (
 						<div key={starship.name} className="ship">
+							{starship.films.length === highestFilmCount && (
+								<img
+									src="../img/star.png"
+									alt="star"
+									className="star"
+								/>
+							)}
 							<h2>{starship.name}</h2>
 							<p>Model: {starship.model}</p>
-							<p>Manufacturer: {starship.manufacturer}</p>
-							<p>Crew: {starship.crew}</p>
 							<p>Films: {starship.films.length}</p>
-							<button onClick={()=>{handleClick(starship)}}>View More details</button>
+							<button
+								className="shipBtn"
+								onClick={() => {
+									handleClick(starship);
+								}}
+							>
+								View More details
+							</button>
 						</div>
 					))}
 				</div>
@@ -214,8 +232,39 @@ const ContainerStyles = styled.div`
 			grid-template-columns: repeat(4, 1fr);
 			gap: 1rem;
 			.ship {
-				background: white;
+				padding: 2rem;
 				border-radius: 10px;
+				border: 1px solid white;
+				color: white;
+				border-radius: 10px;
+				position: relative;
+				&:hover {
+					transform: scale(1.1);
+					cursor: pointer;
+					background: #fff;
+					color: black;
+					.shipBtn {
+						cursor: pointer;
+						background: #000;
+						color: #fff;
+						&:hover {
+							background: #fff;
+							border: 1px solid #ffc909;
+							color: #000;
+						}
+					}
+				}
+				.star {
+					position: absolute;
+					top: 10px;
+					right: 10px;
+					width: 50px;
+				}
+			}
+			.shipBtn {
+				background: #ffc909;
+				padding: 1rem;
+				color: #000;
 			}
 		}
 	}
@@ -278,9 +327,9 @@ const LoadingPageStyles = styled.div`
 			animation: scroll 70s linear forwards;
 		}
 	}
-	
+
 	@media (max-width: 768px) {
-		.wrapper{
+		.wrapper {
 			width: 90%;
 			.scrollText {
 				text-align: center;
