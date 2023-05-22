@@ -68,6 +68,9 @@ export default function Home() {
 					document.getElementById("starsContainer").appendChild(div);
 				}
 			}, 11000);
+			setTimeout(() => {
+				setLoading(false);
+			}, 14000);
 		}
 	}, [loading]);
 
@@ -91,8 +94,10 @@ export default function Home() {
 		});
 
 		if (errorResponses.length > 0) {
+			console.log("errorResponses", errorResponses);
 			getMoreStarships(successResponses);
 		} else {
+			console.log("successResponses", successResponses);
 			const data = await Promise.all(res.map((r) => r.json()));
 			formatStarshipResponse(data);
 		}
@@ -126,9 +131,7 @@ export default function Home() {
 				formattedStarships.map((o) => o.films.length)
 			)
 		);
-		setTimeout(() => {
-			setLoading(false);
-		}, 13500);
+		console.log("done");
 	};
 
 	const handleClick = (ship) => {
@@ -176,30 +179,41 @@ export default function Home() {
 				<div className="intro">
 					<h1>Welcome to Star Wars Ships!</h1>
 				</div>
-				<div className="shipContainer">
-					{starships.map((starship) => (
-						<div key={starship.name} className="ship" data-aos="fade-up">
-							{starship.films.length === highestFilmCount && (
-								<img
-									src="../img/star.png"
-									alt="star"
-									className="star"
-								/>
-							)}
-							<h2>{starship.name}</h2>
-							<p>Model: {starship.model}</p>
-							<p>Films: {starship.films.length}</p>
-							<button
-								className="shipBtn"
-								onClick={() => {
-									handleClick(starship);
-								}}
+				{starships.length === 0 ? (
+					<div className="loading">
+						<h2>Something went wrong, please try again shortly.</h2>
+					</div>
+				) : (
+					<div className="shipContainer">
+						{starships.map((starship) => (
+							<div
+								key={starship.name}
+								className="ship"
+								data-aos="fade-up"
 							>
-								View More details
-							</button>
-						</div>
-					))}
-				</div>
+								{starship.films.length === highestFilmCount && (
+									<img
+										src="../img/star.png"
+										alt="star"
+										className="star"
+									/>
+								)}
+								<h2>{starship.name}</h2>
+								<p>Model: {starship.model}</p>
+								<p>Films: {starship.films.length}</p>
+								<button
+									className="shipBtn"
+									onClick={() => {
+										handleClick(starship);
+									}}
+								>
+									View More details
+								</button>
+							</div>
+						))}
+						
+					</div>
+				)}
 			</main>
 		</ContainerStyles>
 	);
@@ -208,6 +222,7 @@ export default function Home() {
 const ContainerStyles = styled.div`
 	display: flex;
 	width: 100%;
+	height: 100vh;
 	justify-content: center;
 	text-align: center;
 	background-image: url("../img/stars.jpg");
@@ -222,6 +237,11 @@ const ContainerStyles = styled.div`
 		color: #000;
 		.intro {
 			color: #ffc909;
+		}
+		.loading {
+			color: #ffc909;
+			display: flex;
+			justify-content: center;
 		}
 		.shipContainer {
 			display: grid;
