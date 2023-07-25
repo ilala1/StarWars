@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { numberWithCommas } from "../../public/js/common";
+import { numberWithCommas } from "../public/js/common";
 
 export const Modal = ({
 	openModal,
@@ -9,6 +9,8 @@ export const Modal = ({
 	content,
 	highestFilmCount,
 }) => {
+
+	if (!content) return null;
 	const {
 		name,
 		model,
