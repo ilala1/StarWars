@@ -222,7 +222,6 @@ export default function Home() {
 const ContainerStyles = styled.div`
 	display: flex;
 	width: 100%;
-	height: 100vh;
 	justify-content: center;
 	text-align: center;
 	background-image: url("../img/stars.jpg");
